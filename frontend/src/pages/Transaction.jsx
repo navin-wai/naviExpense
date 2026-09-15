@@ -1,11 +1,32 @@
 import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL.replace(/\/+$/, "");
+const categoriesByType = {
+  income: [
+    { value: "salary", label: "Salary" },
+    { value: "investment", label: "Investment" },
+  ],
+  expense: [
+    { value: "food", label: "Food" },
+    { value: "clothes", label: "Clothes" },
+    { value: "bills", label: "Bills" },
+    { value: "travel", label: "Travel" },
+    { value: "entertainment", label: "Entertainment" },
+  ],
+};
 
 function Transaction() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [type, setType] = useState("expense");
+  const [category, setCategory] = useState(categoriesByType.expense[0].value);
+
+  function handleTypeChange(event) {
+    const nextType = event.target.value;
+    setType(nextType);
+    setCategory(categoriesByType[nextType][0].value);
+  }
 
   function getDate() {
     const today = new Date();
@@ -71,7 +92,14 @@ function Transaction() {
               aria-label="Transaction type"
             >
               <div>
-                <input type="radio" id="income" name="type" value="income" />
+                <input
+                  type="radio"
+                  id="income"
+                  name="type"
+                  value="income"
+                  checked={type === "income"}
+                  onChange={handleTypeChange}
+                />
                 <label htmlFor="income">Income</label>
               </div>
               <div>
@@ -80,7 +108,8 @@ function Transaction() {
                   id="expense"
                   name="type"
                   value="expense"
-                  defaultChecked
+                  checked={type === "expense"}
+                  onChange={handleTypeChange}
                 />
                 <label htmlFor="expense">Expense</label>
               </div>
@@ -99,14 +128,18 @@ function Transaction() {
             </div>
             <div className="form-field">
               <label htmlFor="category">Category</label>
-              <select name="category" id="category" required>
-                <option value="food">Food</option>
-                <option value="clothes">Clothes</option>
-                <option value="bills">Bills</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="health">Health</option>
-                <option value="salary">Salary</option>
-                <option value="other">Other</option>
+              <select
+                name="category"
+                id="category"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                required
+              >
+                {categoriesByType[type].map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="form-field">
