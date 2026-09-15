@@ -65,6 +65,25 @@ function Dashboard() {
     ([, firstAmount], [, secondAmount]) => secondAmount - firstAmount,
   );
 
+  async function handleClick(id) {
+    try {
+      const response = await fetch(`${API_URL}/transaction/${id}`, {
+        credentials: "include",
+        method: "DELETE",
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "unable to delte transaction");
+      }
+
+      setTransactions((currentTransactions) =>
+        currentTransactions.filter((transaction) => transaction._id !== id),
+      );
+    } catch (error) {
+      setError(error.message);
+    }
+  }
+
   return (
     <div className="dashboard-content">
       {loading && <p className="loading-state">Loading your transactions...</p>}
@@ -85,7 +104,11 @@ function Dashboard() {
               onChange={(event) => setSelectedMonth(event.target.value)}
             />
           </div>
-          <section className="stats-grid" aria-label="Money summary">
+          <section
+            className="stats-grid"
+            aria-label="Money summary"
+            key={selectedMonth}
+          >
             <article className="stat-card featured">
               <p className="stat-label">Available balance</p>
               <p className="stat-value">
@@ -127,8 +150,12 @@ function Dashboard() {
                   patterns.
                 </p>
               ) : (
-                monthTransactions.map((transaction) => (
-                  <article className="transaction-row" key={transaction._id}>
+                monthTransactions.map((transaction, index) => (
+                  <article
+                    className="transaction-row"
+                    key={transaction._id}
+                    style={{ "--row-index": index }}
+                  >
                     <span className="transaction-icon">
                       {(transaction.category || "other").slice(0, 2)}
                     </span>
@@ -146,6 +173,13 @@ function Dashboard() {
                       {Number(transaction.amount).toLocaleString("en-IN", {
                         minimumFractionDigits: 2,
                       })}
+                      <button
+                        className="delete-button"
+                        type="button"
+                        onClick={() => handleClick(transaction._id)}
+                      >
+                        Delete
+                      </button>
                     </p>
                   </article>
                 ))
@@ -162,8 +196,12 @@ function Dashboard() {
               {categoryEntries.length === 0 ? (
                 <p className="empty-state">No expenses yet.</p>
               ) : (
-                categoryEntries.map(([category, amount]) => (
-                  <div className="category-item" key={category}>
+                categoryEntries.map(([category, amount], index) => (
+                  <div
+                    className="category-item"
+                    key={category}
+                    style={{ "--category-index": index }}
+                  >
                     <div className="category-line">
                       <span>
                         {category.charAt(0).toUpperCase() + category.slice(1)}

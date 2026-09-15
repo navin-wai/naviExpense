@@ -46,4 +46,21 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = validateToken(req.cookies.token);
+
+    if (!user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const deleteTransaction = await Transaction.findByIdAndDelete(id);
+    return res.json({ message: "Transaction Delted successfully" });
+  } catch (error) {
+    console.error("Delete Transaction Error", error);
+    return res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router;
